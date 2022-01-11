@@ -30,7 +30,7 @@
 
 # Deployed:
 
-https://budget-tracker-app.herokuapp.com/
+https://git.heroku.com/trackingbudgets.git
 
 <br>
 
