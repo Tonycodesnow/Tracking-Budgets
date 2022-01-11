@@ -22,41 +22,40 @@ self.addEventListener('fetch', function (e) {
   if (e.request.url.includes('/api/transaction')) {
     e.respondWith(
       caches
-      .open(DATA_CACHE_NAME).then(cache => {
-        return cache.match(e.request)
+      .open(DATA_CACHE_NAME)
+      .then(cache => {
+        return fetch(e.request)
           .then(response => {
-            return response || fetch(e.request)
-              .then(response => {
+            if (response.status === 200) {
                 cache.put(e.request, response.clone());
-                return response;
-              });
+              }
+              return response;
           });
       })
+      .catch(err => console.log(err))
+    );
+  } else {
+    e.respondWith(
+      caches
+      .match(e.request)
+      .then(response => response || fetch(e.request))
     );
   }
   e.respondWith(
-    caches.match(e.request).then(function (request) {
-      if (request) { // if cache is available, respond with cache
-        console.log('responding with cache : ' + e.request.url)
-        return request
-      } else {       // if there are no cache, try fetching request
-        console.log('file is not cached, fetching : ' + e.request.url)
-        return fetch(e.request)
-      }
-
-      // You can omit if/else for console.log & put one line below like this too.
-      // return request || fetch(e.request)
-    })
-  )
-})
-
-
-
-
-
-
-
-
+    fetch(e.request).catch(async function () {
+        if (request) {
+          const response = await caches
+            .match(evt.request);
+          if (response) {
+            return response;
+          } else if (evt.request.headers.get('accept')
+            .includes('text/html')) {
+            return caches.match('/');
+          }
+        }
+      })
+  );
+});
 
 
 // Cache resources
